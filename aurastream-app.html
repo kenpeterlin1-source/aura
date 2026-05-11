@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AuraStream App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#080603;--surface:#100C06;--card:#18120A;--card2:#1E1610;
+    --border:#2e2210;--border2:#3a2c18;
+    --amber-50:#FAEEDA;--amber-100:#FAC775;--amber-200:#EF9F27;--amber-400:#BA7517;--amber-600:#854F0B;--amber-800:#633806;
+    --text-1:#F0E4CC;--text-2:#B89660;--text-3:#6a4e2a;
+    --serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',sans-serif;
+    --green:#4a8c5c;--red:#8c4a4a;--blue:#3a6080;
+  }
+  html,body{height:100%;overflow:hidden}
+  body{background:var(--bg);color:var(--text-1);font-family:var(--sans);display:flex;height:100vh}
+
+  /* SIDEBAR */
+  .sidebar{width:72px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:1.5rem 0;gap:0.25rem;flex-shrink:0}
+  .logo-mark{font-family:var(--serif);font-size:1.4rem;color:var(--amber-100);margin-bottom:1.5rem;font-weight:400}
+  .nav-btn{width:44px;height:44px;border-radius:12px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:1.1rem;transition:all 0.2s;position:relative}
+  .nav-btn:hover{background:var(--card);color:var(--text-2)}
+  .nav-btn.active{background:var(--card2);color:var(--amber-200)}
+  .nav-btn.active::before{content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:3px;height:24px;border-radius:0 3px 3px 0;background:var(--amber-200)}
+  .sidebar-spacer{flex:1}
+  .avatar{width:36px;height:36px;border-radius:50%;background:var(--amber-800);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:500;color:var(--amber-100)}
+
+  /* MAIN */
+  .main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+  .main::-webkit-scrollbar{width:4px}
+  .main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+  /* TOPBAR */
+  .topbar{padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+  .topbar-left h1{font-family:var(--serif);font-size:1.5rem;font-weight:400;color:var(--text-1)}
+  .topbar-left p{font-size:0.8rem;color:var(--text-3);margin-top:0.1rem}
+  .topbar-right{display:flex;align-items:center;gap:0.75rem}
+  .status-pill{display:flex;align-items:center;gap:0.5rem;background:var(--card);border:1px solid var(--border2);border-radius:2rem;padding:0.4rem 0.9rem;font-size:0.75rem;color:var(--text-2)}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:#4a8c5c;animation:blink 2s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+
+  /* CONTENT */
+  .content{padding:1.75rem 2rem;display:grid;grid-template-columns:1fr 360px;gap:1.5rem;flex:1}
+
+  /* PLAYER */
+  .player-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:2rem;position:relative;overflow:hidden}
+  .player-card::before{content:'';position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(186,117,23,0.06) 0%,transparent 70%)}
+  .player-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem}
+  .player-mode{font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber-200);margin-bottom:0.4rem}
+  .player-title{font-family:var(--serif);font-size:2rem;font-weight:300;color:var(--text-1);line-height:1.1}
+  .player-subtitle{font-size:0.8rem;color:var(--text-3);margin-top:0.3rem}
+  .freq-badge{background:var(--card2);border:1px solid var(--border2);border-radius:2rem;padding:0.4rem 0.9rem;font-size:0.75rem;color:var(--amber-100)}
+
+  /* WAVEFORM */
+  .waveform{height:72px;display:flex;align-items:center;gap:3px;margin:1.5rem 0;overflow:hidden}
+  .wave-bar{flex:1;border-radius:2px;background:var(--amber-600);opacity:0.4;transition:height 0.1s}
+
+  /* CONTROLS */
+  .controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .ctrl-group{display:flex;align-items:center;gap:0.75rem}
+  .ctrl-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:0.9rem;transition:all 0.2s}
+  .ctrl-btn:hover{border-color:var(--amber-400);color:var(--amber-100)}
+  .play-btn{width:56px;height:56px;background:var(--amber-200);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--amber-900);font-size:1.2rem;transition:all 0.2s}
+  .play-btn:hover{background:var(--amber-100);transform:scale(1.05)}
+  .timer{font-family:var(--serif);font-size:1.1rem;color:var(--text-2);font-weight:300}
+
+  /* FREQ SLIDERS */
+  .freq-section{margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.5rem}
+  .freq-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+  .freq-name{font-size:0.75rem;color:var(--text-2);min-width:80px}
+  .freq-slider{flex:1;height:4px;-webkit-appearance:none;appearance:none;background:var(--border2);border-radius:2px;outline:none;cursor:pointer}
+  .freq-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber-200);cursor:pointer}
+  .freq-val{font-size:0.75rem;color:var(--amber-200);min-width:36px;text-align:right}
+
+  /* PROFILE SWITCHER */
+  .profiles{display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+  .profile-btn{padding:0.45rem 1rem;border-radius:2rem;border:1px solid var(--border2);background:transparent;cursor:pointer;font-family:var(--sans);font-size:0.75rem;color:var(--text-2);transition:all 0.2s}
+  .profile-btn:hover{border-color:var(--amber-400);color:var(--amber-100)}
+  .profile-btn.active{background:var(--amber-800);border-color:var(--amber-600);color:var(--amber-50)}
+
+  /* RIGHT PANEL */
+  .right-panel{display:flex;flex-direction:column;gap:1.25rem}
+
+  /* BIOMETRIC */
+  .bio-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+  .card-label{font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem}
+  .bio-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
+  .bio-metric{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1rem}
+  .bio-val{font-family:var(--serif);font-size:1.8rem;font-weight:300;color:var(--text-1);line-height:1}
+  .bio-unit{font-size:0.7rem;color:var(--text-3);margin-top:0.2rem}
+  .bio-trend{font-size:0.7rem;margin-top:0.5rem;display:flex;align-items:center;gap:0.3rem}
+  .trend-up{color:#4a8c5c}
+  .trend-neutral{color:var(--amber-400)}
+
+  /* ALERT */
+  .alert-card{background:rgba(74,140,92,0.08);border:1px solid rgba(74,140,92,0.2);border-radius:14px;padding:1.25rem;display:flex;gap:0.75rem;align-items:flex-start}
+  .alert-icon{font-size:1rem;line-height:1;margin-top:0.1rem}
+  .alert-title{font-size:0.8rem;font-weight:500;color:#7ec898;margin-bottom:0.2rem}
+  .alert-desc{font-size:0.75rem;color:var(--text-3);line-height:1.5}
+
+  /* SLEEP STAGES */
+  .stages-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+  .stages-bar{display:flex;height:28px;border-radius:6px;overflow:hidden;margin:0.75rem 0;gap:2px}
+  .stage-seg{display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:rgba(255,255,255,0.5);letter-spacing:0.06em;text-transform:uppercase;transition:opacity 0.3s}
+  .stage-seg.awake{background:#4a3010;flex:0.05}
+  .stage-seg.rem{background:#6a4e1a;flex:0.2}
+  .stage-seg.light{background:#8a6828;flex:0.35}
+  .stage-seg.deep{background:#ba7517;flex:0.4}
+  .stages-legend{display:flex;gap:1rem;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:0.4rem;font-size:0.7rem;color:var(--text-3)}
+  .legend-dot{width:8px;height:8px;border-radius:2px}
+
+  /* SCHEDULE */
+  .schedule-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+  .schedule-row{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid var(--border)}
+  .schedule-row:last-child{border-bottom:none}
+  .sched-label{font-size:0.8rem;color:var(--text-2)}
+  .sched-val{font-size:0.8rem;color:var(--amber-100)}
+  .sched-tag{font-size:0.65rem;background:var(--card2);border:1px solid var(--border2);border-radius:1rem;padding:0.2rem 0.6rem;color:var(--text-3)}
+
+  /* CANVAS */
+  #waveCanvas{width:100%;height:72px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <span class="logo-mark">A</span>
+  <button class="nav-btn active" title="Sleep">🌙</button>
+  <button class="nav-btn" title="Analytics">📊</button>
+  <button class="nav-btn" title="Wearables">⌚</button>
+  <button class="nav-btn" title="Coaching">🌿</button>
+  <button class="nav-btn" title="Settings">⚙️</button>
+  <div class="sidebar-spacer"></div>
+  <div class="avatar">SL</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1>Sleep Session</h1>
+      <p>Thursday, 14 November · Tonight's protocol active</p>
+    </div>
+    <div class="topbar-right">
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        Oura Ring connected
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- LEFT: PLAYER -->
+    <div>
+      <!-- Profile selector -->
+      <div class="profiles">
+        <button class="profile-btn active" onclick="switchProfile(this,'Menopause Protocol')">Menopause Protocol</button>
+        <button class="profile-btn" onclick="switchProfile(this,'Deep Sleep N3')">Deep Sleep N3</button>
+        <button class="profile-btn" onclick="switchProfile(this,'High Performance')">High Performance</button>
+        <button class="profile-btn" onclick="switchProfile(this,'GLP-1 Recovery')">GLP-1 Recovery</button>
+      </div>
+
+      <div class="player-card">
+        <div class="player-header">
+          <div>
+            <p class="player-mode">Active Protocol</p>
+            <h2 class="player-title" id="playerTitle">Menopause<br>Protocol</h2>
+            <p class="player-subtitle" id="playerSub">1.5Hz Delta · Pink noise masking · Cortisol attenuation</p>
+          </div>
+          <div class="freq-badge" id="freqBadge">1.5 Hz Delta</div>
+        </div>
+
+        <!-- Live waveform -->
+        <canvas id="waveCanvas"></canvas>
+
+        <!-- Controls -->
+        <div class="controls">
+          <div class="ctrl-group">
+            <button class="ctrl-btn" title="Previous">⏮</button>
+            <button class="play-btn" id="playBtn" onclick="togglePlay()">▶</button>
+            <button class="ctrl-btn" title="Next">⏭</button>
+          </div>
+          <span class="timer" id="timer">0:00</span>
+          <div class="ctrl-group">
+            <button class="ctrl-btn" title="Sleep timer">⏱</button>
+            <button class="ctrl-btn" title="Bookmark">🔖</button>
+          </div>
+        </div>
+
+        <!-- Frequency sliders -->
+        <div class="freq-section">
+          <p style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:1rem">Frequency mix</p>
+          <div class="freq-row">
+            <span class="freq-name">Delta carrier</span>
+            <input type="range" class="freq-slider" min="0" max="100" value="85" oninput="updateSlider(this)">
+            <span class="freq-val">85%</span>
+          </div>
+          <div class="freq-row">
+            <span class="freq-name">Pink noise</span>
+            <input type="range" class="freq-slider" min="0" max="100" value="60" oninput="updateSlider(this)">
+            <span class="freq-val">60%</span>
+          </div>
+          <div class="freq-row">
+            <span class="freq-name">Ambient layer</span>
+            <input type="range" class="freq-slider" min="0" max="100" value="40" oninput="updateSlider(this)">
+            <span class="freq-val">40%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <!-- Biometrics -->
+      <div class="bio-card">
+        <p class="card-label">Live biometrics</p>
+        <div class="bio-grid">
+          <div class="bio-metric">
+            <div class="bio-val" id="hrVal">62</div>
+            <div class="bio-unit">Heart rate · BPM</div>
+            <div class="bio-trend trend-up">↓ Settling</div>
+          </div>
+          <div class="bio-metric">
+            <div class="bio-val" id="hrvVal">48</div>
+            <div class="bio-unit">HRV · ms</div>
+            <div class="bio-trend trend-up">↑ Rising</div>
+          </div>
+          <div class="bio-metric">
+            <div class="bio-val">N1</div>
+            <div class="bio-unit">Sleep stage</div>
+            <div class="bio-trend trend-neutral">→ Deepening</div>
+          </div>
+          <div class="bio-metric">
+            <div class="bio-val">18°</div>
+            <div class="bio-unit">Skin temp · °C</div>
+            <div class="bio-trend trend-up">↓ Cooling</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adaptive alert -->
+      <div class="alert-card">
+        <span class="alert-icon">✦</span>
+        <div>
+          <p class="alert-title">Protocol adapted 3 min ago</p>
+          <p class="alert-desc">Mild HR elevation detected (68 BPM). AuraStream cross-faded to Deep Calm profile to prevent full arousal.</p>
+        </div>
+      </div>
+
+      <!-- Sleep stages -->
+      <div class="stages-card">
+        <p class="card-label">Tonight's sleep architecture</p>
+        <div class="stages-bar">
+          <div class="stage-seg awake">W</div>
+          <div class="stage-seg rem">REM</div>
+          <div class="stage-seg light">Light</div>
+          <div class="stage-seg deep">Deep</div>
+        </div>
+        <div class="stages-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#4a3010"></div>Awake</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#6a4e1a"></div>REM</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#8a6828"></div>Light</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ba7517"></div>Deep</div>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="schedule-card">
+        <p class="card-label">Tonight's schedule</p>
+        <div class="schedule-row">
+          <span class="sched-label">Onset protocol</span>
+          <span class="sched-val">10:30 PM</span>
+        </div>
+        <div class="schedule-row">
+          <span class="sched-label">Deep sleep window</span>
+          <span class="sched-val">11:00 PM – 3:00 AM</span>
+        </div>
+        <div class="schedule-row">
+          <span class="sched-label">REM extension</span>
+          <span class="sched-val">3:00 – 6:00 AM</span>
+        </div>
+        <div class="schedule-row">
+          <span class="sched-label">Wake ramp</span>
+          <span class="sched-val">6:30 AM</span>
+          <span class="sched-tag">Gentle</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // WAVEFORM ANIMATION
+  const canvas = document.getElementById('waveCanvas');
+  const ctx = canvas.getContext('2d');
+  let phase = 0;
+  let isPlaying = false;
+  let elapsed = 0;
+  let timerInterval = null;
+
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+    canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  function drawWave() {
+    const w = canvas.offsetWidth;
+    const h = canvas.offsetHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    const amplitude = isPlaying ? 20 : 8;
+    const speed = isPlaying ? 0.04 : 0.01;
+
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(186,117,23,0.5)';
+    ctx.lineWidth = 1.5;
+    for (let x = 0; x < w; x++) {
+      const y = h/2 + Math.sin((x * 0.02) + phase) * amplitude
+               + Math.sin((x * 0.05) + phase * 1.3) * (amplitude * 0.4)
+               + Math.sin((x * 0.008) + phase * 0.7) * (amplitude * 0.6);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(239,159,39,0.2)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < w; x++) {
+      const y = h/2 + Math.sin((x * 0.015) + phase * 0.8 + 1) * (amplitude * 0.6);
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    phase += speed;
+    requestAnimationFrame(drawWave);
+  }
+  drawWave();
+
+  // PLAY / PAUSE
+  function togglePlay() {
+    isPlaying = !isPlaying;
+    document.getElementById('playBtn').textContent = isPlaying ? '⏸' : '▶';
+    if (isPlaying) {
+      timerInterval = setInterval(() => {
+        elapsed++;
+        const m = Math.floor(elapsed / 60);
+        const s = elapsed % 60;
+        document.getElementById('timer').textContent = m + ':' + String(s).padStart(2,'0');
+        // Fluctuate HR and HRV
+        const hr = 60 + Math.round(Math.random() * 6 - 3);
+        const hrv = 46 + Math.round(Math.random() * 6 - 3);
+        document.getElementById('hrVal').textContent = hr;
+        document.getElementById('hrvVal').textContent = hrv;
+      }, 1000);
+    } else {
+      clearInterval(timerInterval);
+    }
+  }
+
+  // SLIDER
+  function updateSlider(el) {
+    el.nextElementSibling.textContent = el.value + '%';
+  }
+
+  // PROFILE SWITCH
+  const profiles = {
+    'Menopause Protocol': {title:'Menopause\nProtocol', sub:'1.5Hz Delta · Pink noise masking · Cortisol attenuation', badge:'1.5 Hz Delta'},
+    'Deep Sleep N3': {title:'Deep Sleep\nN3', sub:'0.5–4Hz Delta · Maximum slow-wave enhancement', badge:'0.5–4 Hz Delta'},
+    'High Performance': {title:'High\nPerformance', sub:'Theta to Delta cascade · HRV-optimized recovery', badge:'4–8 Hz Theta'},
+    'GLP-1 Recovery': {title:'GLP-1\nRecovery', sub:'Gentle Delta · Nausea-aware sleep onset protocol', badge:'2 Hz Delta'},
+  };
+  function switchProfile(btn, name) {
+    document.querySelectorAll('.profile-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const p = profiles[name];
+    const titleEl = document.getElementById('playerTitle');
+    titleEl.innerHTML = p.title.replace('\n','<br>');
+    document.getElementById('playerSub').textContent = p.sub;
+    document.getElementById('freqBadge').textContent = p.badge;
+  }
+</script>
+</body>
+</html>

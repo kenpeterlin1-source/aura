@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AuraStream — Bio-Adaptive Sleep & Wellness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --amber-50:#FAEEDA;--amber-100:#FAC775;--amber-200:#EF9F27;--amber-400:#BA7517;--amber-600:#854F0B;--amber-800:#633806;--amber-900:#412402;
+    --warm-bg:#0D0A06;--warm-surface:#130E07;--warm-card:#1C1409;--warm-border:#3a2a14;
+    --text-primary:#F5ECD8;--text-secondary:#C4A97A;--text-muted:#7a6040;
+    --serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',sans-serif;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--warm-bg);color:var(--text-primary);font-family:var(--sans);font-size:16px;line-height:1.7;overflow-x:hidden}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.25rem 3rem;background:rgba(13,10,6,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(58,42,20,0.4)}
+  .nav-logo{font-family:var(--serif);font-size:1.5rem;font-weight:600;color:var(--amber-100);letter-spacing:0.02em}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{font-size:0.875rem;color:var(--text-secondary);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;transition:color 0.2s}
+  .nav-links a:hover{color:var(--amber-100)}
+  .nav-cta{background:var(--amber-200);color:var(--amber-900);font-family:var(--sans);font-size:0.8rem;font-weight:500;padding:0.6rem 1.4rem;border-radius:2rem;text-decoration:none;letter-spacing:0.05em;text-transform:uppercase;transition:background 0.2s}
+  .nav-cta:hover{background:var(--amber-100)}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem 4rem;position:relative;overflow:hidden}
+  .hero-glow{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(186,117,23,0.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+  .hero-ring{position:absolute;width:500px;height:500px;border-radius:50%;border:1px solid rgba(186,117,23,0.08);top:50%;left:50%;transform:translate(-50%,-50%);animation:pulse 4s ease-in-out infinite}
+  .hero-ring-2{position:absolute;width:700px;height:700px;border-radius:50%;border:1px solid rgba(186,117,23,0.05);top:50%;left:50%;transform:translate(-50%,-50%);animation:pulse 4s ease-in-out infinite 1s}
+  @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+  .hero-eyebrow{font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--amber-200);margin-bottom:1.5rem;opacity:0;animation:fadeUp 0.8s 0.2s forwards}
+  .hero-title{font-family:var(--serif);font-size:clamp(3rem,8vw,6.5rem);font-weight:300;line-height:1.05;color:var(--text-primary);margin-bottom:1.5rem;opacity:0;animation:fadeUp 0.8s 0.4s forwards}
+  .hero-title em{font-style:italic;color:var(--amber-100)}
+  .hero-subtitle{font-size:1.125rem;color:var(--text-secondary);max-width:560px;font-weight:300;line-height:1.8;margin-bottom:2.5rem;opacity:0;animation:fadeUp 0.8s 0.6s forwards}
+  .hero-actions{display:flex;gap:1rem;align-items:center;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp 0.8s 0.8s forwards}
+  .btn-primary{background:var(--amber-200);color:var(--amber-900);font-family:var(--sans);font-size:0.875rem;font-weight:500;padding:0.85rem 2rem;border-radius:2rem;text-decoration:none;letter-spacing:0.05em;text-transform:uppercase;transition:all 0.2s}
+  .btn-primary:hover{background:var(--amber-100);transform:translateY(-1px)}
+  .btn-ghost{color:var(--text-secondary);font-size:0.875rem;text-decoration:none;letter-spacing:0.05em;padding:0.85rem 1.5rem;border:1px solid var(--warm-border);border-radius:2rem;transition:all 0.2s}
+  .btn-ghost:hover{border-color:var(--amber-400);color:var(--amber-100)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+  /* AUDIENCE STRIP */
+  .audiences{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--warm-border);border-bottom:1px solid var(--warm-border)}
+  .audience-card{padding:3rem 2.5rem;border-right:1px solid var(--warm-border);position:relative;overflow:hidden;transition:background 0.3s}
+  .audience-card:last-child{border-right:none}
+  .audience-card:hover{background:var(--warm-surface)}
+  .audience-number{font-family:var(--serif);font-size:3.5rem;font-weight:300;color:var(--amber-400);opacity:0.3;position:absolute;top:1.5rem;right:2rem;line-height:1}
+  .audience-icon{font-size:1.5rem;margin-bottom:1rem}
+  .audience-label{font-size:0.7rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--amber-200);margin-bottom:0.75rem}
+  .audience-title{font-family:var(--serif);font-size:1.75rem;font-weight:400;color:var(--text-primary);margin-bottom:0.75rem;line-height:1.2}
+  .audience-desc{font-size:0.9rem;color:var(--text-muted);line-height:1.7}
+
+  /* SECTION COMMONS */
+  section{padding:6rem 3rem}
+  .section-eyebrow{font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--amber-200);margin-bottom:1rem}
+  .section-title{font-family:var(--serif);font-size:clamp(2rem,4vw,3.5rem);font-weight:300;color:var(--text-primary);line-height:1.15;margin-bottom:1.5rem}
+  .section-title em{font-style:italic;color:var(--amber-100)}
+  .section-body{font-size:1rem;color:var(--text-secondary);max-width:560px;line-height:1.8}
+  .max-w{max-width:1200px;margin:0 auto}
+
+  /* HOW IT WORKS */
+  .how{background:var(--warm-surface)}
+  .how-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+  .how-steps{display:flex;flex-direction:column;gap:0}
+  .step{display:flex;gap:1.5rem;padding:2rem 0;border-bottom:1px solid var(--warm-border);position:relative}
+  .step:last-child{border-bottom:none}
+  .step-num{font-family:var(--serif);font-size:2.5rem;font-weight:300;color:var(--amber-800);line-height:1;min-width:3rem}
+  .step-content{}
+  .step-title{font-size:0.9rem;font-weight:500;color:var(--amber-100);margin-bottom:0.4rem;letter-spacing:0.04em}
+  .step-desc{font-size:0.875rem;color:var(--text-muted);line-height:1.7}
+  .how-visual{display:flex;align-items:center;justify-content:center}
+  .wave-viz{width:100%;max-width:400px}
+  .wave-circle{width:320px;height:320px;border-radius:50%;border:1px solid var(--warm-border);display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto}
+  .wave-inner{width:240px;height:240px;border-radius:50%;border:1px solid rgba(186,117,23,0.15);display:flex;align-items:center;justify-content:center;animation:slowSpin 20s linear infinite}
+  .wave-core{width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(239,159,39,0.15),rgba(186,117,23,0.05));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0.25rem}
+  .wave-hz{font-family:var(--serif);font-size:2rem;font-weight:300;color:var(--amber-100)}
+  .wave-label{font-size:0.65rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)}
+  .orbit-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--amber-200)}
+  .orbit-dot:nth-child(1){top:-4px;left:50%;transform:translateX(-50%)}
+  .orbit-dot:nth-child(2){bottom:-4px;right:30%}
+  .orbit-dot:nth-child(3){left:-4px;top:40%}
+  @keyframes slowSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  /* SCIENCE */
+  .science-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:3rem}
+  .sci-card{background:var(--warm-card);border:1px solid var(--warm-border);border-radius:16px;padding:2rem 1.75rem;position:relative;overflow:hidden;transition:border-color 0.3s}
+  .sci-card:hover{border-color:var(--amber-800)}
+  .sci-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--amber-200),transparent);opacity:0;transition:opacity 0.3s}
+  .sci-card:hover::before{opacity:1}
+  .sci-freq{font-family:var(--serif);font-size:2.5rem;font-weight:300;color:var(--amber-400);margin-bottom:0.5rem;line-height:1}
+  .sci-stage{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber-200);margin-bottom:0.75rem}
+  .sci-title{font-size:1rem;font-weight:500;color:var(--text-primary);margin-bottom:0.5rem}
+  .sci-desc{font-size:0.85rem;color:var(--text-muted);line-height:1.7}
+
+  /* PHASES */
+  .phases{background:var(--warm-surface)}
+  .phases-timeline{position:relative;margin-top:3rem}
+  .phases-timeline::before{content:'';position:absolute;left:120px;top:0;bottom:0;width:1px;background:var(--warm-border)}
+  .phase-item{display:flex;gap:3rem;margin-bottom:3rem;position:relative}
+  .phase-item:last-child{margin-bottom:0}
+  .phase-label{min-width:120px;text-align:right;padding-top:0.1rem}
+  .phase-tag{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber-400)}
+  .phase-dot{position:absolute;left:116px;top:0.4rem;width:9px;height:9px;border-radius:50%;background:var(--amber-200);border:2px solid var(--warm-bg)}
+  .phase-content{flex:1}
+  .phase-title{font-family:var(--serif);font-size:1.3rem;font-weight:400;color:var(--text-primary);margin-bottom:0.5rem}
+  .phase-desc{font-size:0.875rem;color:var(--text-muted);line-height:1.7}
+  .phase-features{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem}
+  .phase-chip{font-size:0.7rem;padding:0.25rem 0.75rem;border-radius:1rem;border:1px solid var(--warm-border);color:var(--text-secondary);letter-spacing:0.04em}
+
+  /* CTA */
+  .cta-section{text-align:center;padding:8rem 3rem;position:relative;overflow:hidden}
+  .cta-glow{position:absolute;width:600px;height:300px;background:radial-gradient(ellipse,rgba(186,117,23,0.08) 0%,transparent 70%);bottom:0;left:50%;transform:translateX(-50%)}
+  .cta-title{font-family:var(--serif);font-size:clamp(2.5rem,5vw,4.5rem);font-weight:300;line-height:1.1;margin-bottom:1.5rem}
+  .cta-title em{font-style:italic;color:var(--amber-100)}
+  .cta-sub{color:var(--text-muted);margin-bottom:2.5rem;font-size:0.95rem}
+  .cta-input-row{display:flex;gap:0.75rem;justify-content:center;max-width:420px;margin:0 auto}
+  .cta-input{background:var(--warm-card);border:1px solid var(--warm-border);border-radius:2rem;padding:0.85rem 1.5rem;font-family:var(--sans);font-size:0.875rem;color:var(--text-primary);outline:none;flex:1;transition:border-color 0.2s}
+  .cta-input::placeholder{color:var(--text-muted)}
+  .cta-input:focus{border-color:var(--amber-400)}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--warm-border);padding:2.5rem 3rem;display:flex;align-items:center;justify-content:space-between}
+  .footer-logo{font-family:var(--serif);font-size:1.2rem;color:var(--amber-400)}
+  .footer-text{font-size:0.8rem;color:var(--text-muted)}
+  .footer-links{display:flex;gap:1.5rem}
+  .footer-links a{font-size:0.8rem;color:var(--text-muted);text-decoration:none;transition:color 0.2s}
+  .footer-links a:hover{color:var(--amber-100)}
+
+  @media(max-width:768px){
+    nav{padding:1rem 1.5rem}
+    .nav-links{display:none}
+    .audiences{grid-template-columns:1fr}
+    .audience-card{border-right:none;border-bottom:1px solid var(--warm-border)}
+    .how-grid{grid-template-columns:1fr;gap:3rem}
+    .science-grid{grid-template-columns:1fr}
+    .phases-timeline::before{left:80px}
+    .phase-label{min-width:80px}
+    .phase-dot{left:76px}
+    section{padding:4rem 1.5rem}
+    footer{flex-direction:column;gap:1rem;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">AuraStream</span>
+  <ul class="nav-links">
+    <li><a href="#science">Science</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#phases">Roadmap</a></li>
+  </ul>
+  <a href="#waitlist" class="nav-cta">Join waitlist</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-ring"></div>
+  <div class="hero-ring-2"></div>
+  <p class="hero-eyebrow">Bio-Adaptive Sleep Science</p>
+  <h1 class="hero-title">Sleep that <em>listens</em><br>to your body</h1>
+  <p class="hero-subtitle">AuraStream uses real-time biometric data and precision frequency audio to adapt your sleep environment — live, as you sleep.</p>
+  <div class="hero-actions">
+    <a href="#waitlist" class="btn-primary">Join the waitlist</a>
+    <a href="#how" class="btn-ghost">See how it works</a>
+  </div>
+</section>
+
+<!-- AUDIENCE -->
+<div class="audiences">
+  <div class="audience-card">
+    <span class="audience-number">01</span>
+    <div class="audience-icon">🌙</div>
+    <p class="audience-label">Hormonal Health</p>
+    <h3 class="audience-title">Menopausal Women</h3>
+    <p class="audience-desc">1.5Hz Delta carriers with pink noise masking reduce cortisol spikes and the night sweats that interrupt restorative sleep.</p>
+  </div>
+  <div class="audience-card">
+    <span class="audience-number">02</span>
+    <div class="audience-icon">⚡</div>
+    <p class="audience-label">Metabolic Wellness</p>
+    <h3 class="audience-title">GLP-1 Users</h3>
+    <p class="audience-desc">Dedicated sleep protocols designed around the recovery needs of metabolic health journeys — reducing food noise, improving deep rest.</p>
+  </div>
+  <div class="audience-card">
+    <span class="audience-number">03</span>
+    <div class="audience-icon">🎯</div>
+    <p class="audience-label">Performance</p>
+    <h3 class="audience-title">High Performers</h3>
+    <p class="audience-desc">Biohack your recovery. Precision frequency layering targets N3 deep sleep stages for maximum cognitive and physical restoration.</p>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="max-w how-grid">
+    <div>
+      <p class="section-eyebrow">The method</p>
+      <h2 class="section-title">Adaptive audio,<br><em>not ambient noise</em></h2>
+      <p class="section-body">Most sleep apps play the same loop on repeat. Your brain habituates within minutes. AuraStream generates infinite, non-looping soundscapes and embeds precise carrier frequencies — adapting in real time to your biometric signals.</p>
+      <div class="how-steps" style="margin-top:2.5rem">
+        <div class="step">
+          <span class="step-num">01</span>
+          <div class="step-content">
+            <p class="step-title">Generative audio engine</p>
+            <p class="step-desc">AI creates non-repeating ambient soundscapes that prevent neural habituation — the enemy of every static sleep app.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-num">02</span>
+          <div class="step-content">
+            <p class="step-title">Frequency embedding</p>
+            <p class="step-desc">Precise Alpha, Theta, and Delta carrier tones are layered beneath the soundscape — matched to your current sleep stage.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-num">03</span>
+          <div class="step-content">
+            <p class="step-title">Live bio-adaptive response</p>
+            <p class="step-desc">HRV and heart rate data from your wearable triggers instant audio shifts. A hot flash or arousal is met with a calm-inducing response — automatically.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="how-visual">
+      <div class="wave-circle">
+        <div class="orbit-dot"></div>
+        <div class="orbit-dot"></div>
+        <div class="orbit-dot"></div>
+        <div class="wave-inner">
+          <div class="wave-core">
+            <span class="wave-hz">0.5–4Hz</span>
+            <span class="wave-label">Delta · Deep Sleep</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCIENCE -->
+<section id="science">
+  <div class="max-w">
+    <p class="section-eyebrow">The frequencies</p>
+    <h2 class="section-title">Precision-tuned<br>for every <em>sleep stage</em></h2>
+    <div class="science-grid">
+      <div class="sci-card">
+        <div class="sci-freq">12–4Hz</div>
+        <p class="sci-stage">N1 — Sleep Onset</p>
+        <p class="sci-title">Alpha to Theta transition</p>
+        <p class="sci-desc">Guides the brain from waking consciousness down through light sleep — easing the transition that insomniacs struggle with most.</p>
+      </div>
+      <div class="sci-card">
+        <div class="sci-freq">0.5–4Hz</div>
+        <p class="sci-stage">N3 — Deep Sleep</p>
+        <p class="sci-title">Delta wave focus</p>
+        <p class="sci-desc">The frequency range of truly restorative sleep. Increased HGH release, tissue repair, immune support, memory consolidation.</p>
+      </div>
+      <div class="sci-card">
+        <div class="sci-freq">1.5Hz</div>
+        <p class="sci-stage">Menopause Protocol</p>
+        <p class="sci-title">Delta + pink noise masking</p>
+        <p class="sci-desc">A specialized protocol targeting the cortisol spikes that trigger night sweats. Clinically informed and pilot-tested for hormonal disruption.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHASES -->
+<section class="phases" id="phases">
+  <div class="max-w">
+    <p class="section-eyebrow">The roadmap</p>
+    <h2 class="section-title">Built in layers,<br><em>science first</em></h2>
+    <div class="phases-timeline">
+      <div class="phase-item">
+        <div class="phase-label"><span class="phase-tag">Now</span></div>
+        <div class="phase-dot"></div>
+        <div class="phase-content">
+          <h3 class="phase-title">AI Audio Engine</h3>
+          <p class="phase-desc">Generative soundscapes with embedded carrier frequencies, delivered via a low-blue-light web app. No download required.</p>
+          <div class="phase-features">
+            <span class="phase-chip">React web app</span>
+            <span class="phase-chip">Web Audio API</span>
+            <span class="phase-chip">OLED-safe UI</span>
+          </div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label"><span class="phase-tag">Phase 2</span></div>
+        <div class="phase-dot"></div>
+        <div class="phase-content">
+          <h3 class="phase-title">Bio-Data Bridge</h3>
+          <p class="phase-desc">Wearable integration with Apple Health, Oura Ring, and Google Health Connect — closing the loop between your data and your audio.</p>
+          <div class="phase-features">
+            <span class="phase-chip">Oura Ring</span>
+            <span class="phase-chip">Apple Health</span>
+            <span class="phase-chip">Coaching dashboard</span>
+          </div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label"><span class="phase-tag">Phase 3</span></div>
+        <div class="phase-dot"></div>
+        <div class="phase-content">
+          <h3 class="phase-title">Live Co-Pilot</h3>
+          <p class="phase-desc">Real-time HRV monitoring via Web Bluetooth. An adaptive engine that responds to arousal events instantly — before you fully wake.</p>
+          <div class="phase-features">
+            <span class="phase-chip">Web Bluetooth</span>
+            <span class="phase-chip">HR/HRV live stream</span>
+            <span class="phase-chip">Arousal prevention</span>
+          </div>
+        </div>
+      </div>
+      <div class="phase-item">
+        <div class="phase-label"><span class="phase-tag">Vision</span></div>
+        <div class="phase-dot"></div>
+        <div class="phase-content">
+          <h3 class="phase-title">Hypnotherapy Engine</h3>
+          <p class="phase-desc">LLM-generated personalized hypnotherapy scripts delivered via high-fidelity AI voice at the theta window — embedding new behavioral patterns while you sleep.</p>
+          <div class="phase-features">
+            <span class="phase-chip">AI-generated scripts</span>
+            <span class="phase-chip">Voice synthesis</span>
+            <span class="phase-chip">Behavioral change loop</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / WAITLIST -->
+<section class="cta-section" id="waitlist">
+  <div class="cta-glow"></div>
+  <p class="section-eyebrow">Early access</p>
+  <h2 class="cta-title">Your biology<br>deserves <em>better sleep</em></h2>
+  <p class="cta-sub">Join the waitlist. Pilot participants will receive free Pro access and contribute to our clinical validation study.</p>
+  <div class="cta-input-row">
+    <input type="email" class="cta-input" placeholder="your@email.com"/>
+    <a href="#" class="btn-primary" style="white-space:nowrap">Join now</a>
+  </div>
+  <p style="font-size:0.75rem;color:var(--text-muted);margin-top:1rem">HIPAA & GDPR compliant. Your data is yours. Always.</p>
+</section>
+
+<footer>
+  <span class="footer-logo">AuraStream</span>
+  <span class="footer-text">© 2025 AuraStream. Science-backed sleep.</span>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Science</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
