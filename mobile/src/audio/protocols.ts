@@ -21,18 +21,6 @@ export type Protocol = {
 
 export const PROTOCOLS: Protocol[] = [
   {
-    id: 'menopause',
-    name: 'Menopause Protocol',
-    summary: '1.5 Hz Delta · deep, steady masking',
-    beatStart: 10,
-    beatEnd: 1.5,
-    onsetMinutes: 20,
-    carrierHz: 180,
-    noise: 'pink',
-    ambientRoot: 110,
-    mix: { carrier: 0.85, noise: 0.6, ambient: 0.4 },
-  },
-  {
     id: 'deep-sleep',
     name: 'Deep Sleep N3',
     summary: '2 Hz Delta · deep sleep focus',
@@ -68,9 +56,21 @@ export const PROTOCOLS: Protocol[] = [
     ambientRoot: 104,
     mix: { carrier: 0.6, noise: 0.65, ambient: 0.55 },
   },
+  {
+    id: 'menopause',
+    name: 'Menopause Protocol',
+    summary: '1.5 Hz Delta · deep, steady masking',
+    beatStart: 10,
+    beatEnd: 1.5,
+    onsetMinutes: 20,
+    carrierHz: 180,
+    noise: 'pink',
+    ambientRoot: 110,
+    mix: { carrier: 0.85, noise: 0.6, ambient: 0.4 },
+  },
 ];
 
-export const protocolById = (id: string) => PROTOCOLS.find((p) => p.id === id) ?? PROTOCOLS[0];
+export const protocolById = (id: string) => PROTOCOLS.find((p) => p.id === id) ?? PROTOCOLS[0]; // first = default
 
 // Beat rate at a point in the session (eased, matches the engine's ramp).
 export function beatAt(p: Protocol, elapsedSec: number) {

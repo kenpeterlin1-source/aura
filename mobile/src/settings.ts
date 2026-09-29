@@ -5,7 +5,8 @@ import type { CarrierMode } from './audio/engine';
 import type { Mix } from './audio/protocols';
 import type { Soundscape } from './audio/soundscapes';
 
-const KEY = 'aurastream.settings.v1';
+const KEY = 'aurastream.settings.v2';
+const OLD_KEY = 'aurastream.settings.v1'; // v1 saved Menopause as everyone's default; v2 starts on Deep Sleep
 
 export type Settings = {
   protocolId: string;
@@ -18,7 +19,7 @@ export type Settings = {
 };
 
 export const DEFAULTS: Settings = {
-  protocolId: 'menopause',
+  protocolId: 'deep-sleep',
   mix: null,
   mode: 'binaural',
   soundscape: null,
@@ -30,7 +31,14 @@ export const DEFAULTS: Settings = {
 export async function loadSettings(): Promise<Settings> {
   try {
     const raw = await AsyncStorage.getItem(KEY);
-    return raw ? { ...DEFAULTS, ...JSON.parse(raw) } : DEFAULTS;
+    if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
+    const old = await AsyncStorage.getItem(OLD_KEY);
+    if (old) {
+      // keep everything from v1 except the protocol, which starts on the new default
+      const { protocolId: _drop, mix: _mix, ...rest } = JSON.parse(old);
+      return { ...DEFAULTS, ...rest };
+    }
+    return DEFAULTS;
   } catch {
     return DEFAULTS;
   }
