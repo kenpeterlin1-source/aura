@@ -43,9 +43,27 @@ export class SleepEngine {
   private wake: GainNode | null = null;
   private layers: { carrier: GainNode; noise: GainNode; ambient: GainNode; binaural: GainNode; iso: GainNode } | null = null;
   private startedAt = 0;
+  // Survives the screen being closed and reopened (the app keeps running in the background while it plays),
+  // so a reopened screen can show the session that's still going.
+  startedAtWall: Date | null = null;
+  current: SessionPlan | null = null;
+  private listeners = new Set<(playing: boolean) => void>();
+  private notifSubs: { remove: () => void }[] = [];
 
   get playing() {
     return this.ctx !== null;
+  }
+
+  // Tell the screen when playback starts or stops (including from the notification's Stop button).
+  onChange(fn: (playing: boolean) => void) {
+    this.listeners.add(fn);
+    return () => {
+      this.listeners.delete(fn);
+    };
+  }
+
+  private emit() {
+    for (const fn of this.listeners) fn(this.playing);
   }
 
   async start(plan: SessionPlan) {
@@ -171,9 +189,24 @@ export class SleepEngine {
     this.wake = wake;
     this.layers = { carrier, noise, ambient, binaural, iso };
 
+    this.startedAtWall = new Date();
+    this.current = plan;
+    this.emit();
+
     if (Platform.OS !== 'web') {
-      // shows the "now playing" notification, which keeps Android playing with the screen off
+      // shows the "now playing" notification, which keeps Android playing with the screen off; its Stop/Pause end the session
       await PlaybackNotificationManager.show({ title: p.name, artist: 'AuraStream', state: 'playing' }).catch(() => {});
+      await PlaybackNotificationManager.enableControl('stop', true).catch(() => {});
+      await PlaybackNotificationManager.enableControl('pause', true).catch(() => {});
+      if (!this.notifSubs.length) {
+        const end = () => {
+          this.stop().catch(() => {});
+        };
+        this.notifSubs = [
+          PlaybackNotificationManager.addEventListener('playbackNotificationStop', end),
+          PlaybackNotificationManager.addEventListener('playbackNotificationPause', end),
+        ].filter(Boolean) as { remove: () => void }[];
+      }
     }
   }
 
@@ -220,6 +253,9 @@ export class SleepEngine {
       g.gain.linearRampToValueAtTime(0, t + fadeSeconds);
     }
     this.master = this.wake = this.layers = null;
+    this.startedAtWall = null;
+    this.current = null;
+    this.emit();
     await new Promise((r) => setTimeout(r, fadeSeconds * 1000 + 100));
     await ctx.close().catch(() => {});
     if (Platform.OS !== 'web') await PlaybackNotificationManager.hide().catch(() => {});

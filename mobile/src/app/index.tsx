@@ -27,10 +27,11 @@ const clock = (sec: number) => {
 export default function Session() {
   const insets = useSafeAreaInsets();
   const [s, setS] = useState<Settings>(DEFAULTS);
-  const [playing, setPlaying] = useState(false);
+  // start from the engine's state: after the screen is closed and reopened, a session may still be playing
+  const [playing, setPlaying] = useState(engine.playing);
   const [busy, setBusy] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [startedAt, setStartedAt] = useState<Date | null>(null);
+  const [startedAt, setStartedAt] = useState<Date | null>(engine.startedAtWall);
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -42,6 +43,17 @@ export default function Session() {
   useEffect(() => {
     if (loaded.current) saveSettings(s);
   }, [s]);
+  // follow the engine, so a Stop from the notification (or a reopened screen) shows the right state
+  useEffect(
+    () =>
+      engine.onChange((on) => {
+        setPlaying(on);
+        setStartedAt(engine.startedAtWall);
+        if (on) setElapsed(engine.elapsed());
+        else tracker.stop();
+      }),
+    [],
+  );
   useEffect(() => {
     if (!playing) return;
     const id = setInterval(() => setElapsed(engine.elapsed()), 1000);
