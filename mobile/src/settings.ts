@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { CarrierMode } from './audio/engine';
 import type { Mix } from './audio/protocols';
+import type { Soundscape } from './audio/soundscapes';
 
 const KEY = 'aurastream.settings.v1';
 
@@ -10,6 +11,7 @@ export type Settings = {
   protocolId: string;
   mix: Mix | null; // null = the protocol's own starting mix
   mode: CarrierMode;
+  soundscape: Soundscape | null; // null = the protocol's own (pink or brown noise)
   sleepMinutes: number | null; // null = all night
   wakeEnabled: boolean;
   wakeMinutes: number; // minutes after midnight, e.g. 390 = 6:30 AM
@@ -19,6 +21,7 @@ export const DEFAULTS: Settings = {
   protocolId: 'menopause',
   mix: null,
   mode: 'binaural',
+  soundscape: null,
   sleepMinutes: null,
   wakeEnabled: true,
   wakeMinutes: 6 * 60 + 30,

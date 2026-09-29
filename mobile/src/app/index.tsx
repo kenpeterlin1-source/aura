@@ -6,11 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { engine, type CarrierMode } from '@/audio/engine';
 import { bandName, beatAt, PROTOCOLS, protocolById, type Mix } from '@/audio/protocols';
+import { SOUNDSCAPES, soundscapeLabel } from '@/audio/soundscapes';
 import { clockLabel, DEFAULTS, loadSettings, nextWake, saveSettings, type Settings } from '@/settings';
 import { C, F } from '@/theme';
 
 const TIMERS: [number | null, string][] = [[30, '30 min'], [60, '1 hour'], [90, '90 min'], [null, 'All night']];
-const MIX_ROWS: [keyof Mix, string][] = [['carrier', 'Beat tone'], ['noise', 'Noise'], ['ambient', 'Ambient pad']];
+const MIX_ROWS: [keyof Mix, string][] = [['carrier', 'Beat tone'], ['noise', 'Soundscape'], ['ambient', 'Ambient pad']];
 
 const hz = (v: number) => (v >= 10 ? v.toFixed(0) : v.toFixed(1));
 const clock = (sec: number) => {
@@ -47,6 +48,7 @@ export default function Session() {
 
   const protocol = protocolById(s.protocolId);
   const mix = s.mix ?? protocol.mix;
+  const scape = s.soundscape ?? protocol.noise;
   const beat = beatAt(protocol, playing ? elapsed : 0);
   const from = startedAt ?? new Date();
   const wakeAt = s.wakeEnabled ? nextWake(s.wakeMinutes, from) : null;
@@ -58,6 +60,7 @@ export default function Session() {
       protocol: p,
       mix: n.mix ?? p.mix,
       mode: n.mode,
+      soundscape: n.soundscape ?? p.noise,
       sleepMinutes: n.sleepMinutes,
       wakeAt: n.wakeEnabled ? nextWake(n.wakeMinutes) : null,
     };
@@ -117,6 +120,7 @@ export default function Session() {
         <Text style={st.label}>{playing ? 'Tonight’s protocol · playing' : 'Tonight’s protocol'}</Text>
         <Text style={st.protocolName}>{protocol.name}</Text>
         <Text style={st.muted}>{protocol.summary}</Text>
+        <Text style={st.muted}>with {soundscapeLabel(scape).toLowerCase()}</Text>
         <View style={st.beatRow}>
           <Text style={st.beat}>{hz(beat)}</Text>
           <Text style={st.beatUnit}>Hz {bandName(beat)}</Text>
@@ -131,6 +135,14 @@ export default function Session() {
         </Pressable>
         <Text style={st.timer}>{playing ? clock(elapsed) : 'Press play, then put the phone down'}</Text>
       </View>
+
+      <Section title="Soundscape">
+        <View style={st.chips}>
+          {SOUNDSCAPES.map(([k, label]) => (
+            <Chip key={k} label={label} on={scape === k} onPress={() => change({ soundscape: k === protocol.noise ? null : k }, true)} />
+          ))}
+        </View>
+      </Section>
 
       <Section title="Sound">
         <View style={st.segment}>

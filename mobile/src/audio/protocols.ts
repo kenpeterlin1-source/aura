@@ -2,7 +2,7 @@
 // from a relaxed-awake rate down to its sleep rate over the onset window, over a noise bed and a slow ambient pad.
 // Wording stays to relaxation and sleep; no treatment claims.
 
-export type NoiseColor = 'pink' | 'brown';
+import type { Soundscape } from './soundscapes';
 
 export type Mix = { carrier: number; noise: number; ambient: number }; // 0..1 each
 
@@ -14,7 +14,7 @@ export type Protocol = {
   beatEnd: number; // Hz once settled
   onsetMinutes: number;
   carrierHz: number; // pitch of the tone that carries the beat
-  noise: NoiseColor;
+  noise: Soundscape; // default soundscape
   ambientRoot: number; // Hz, root note of the ambient pad
   mix: Mix; // starting mix
 };
@@ -23,7 +23,7 @@ export const PROTOCOLS: Protocol[] = [
   {
     id: 'menopause',
     name: 'Menopause Protocol',
-    summary: '1.5 Hz Delta · pink noise masking',
+    summary: '1.5 Hz Delta · deep, steady masking',
     beatStart: 10,
     beatEnd: 1.5,
     onsetMinutes: 20,
@@ -35,7 +35,7 @@ export const PROTOCOLS: Protocol[] = [
   {
     id: 'deep-sleep',
     name: 'Deep Sleep N3',
-    summary: '2 Hz Delta · brown noise',
+    summary: '2 Hz Delta · deep sleep focus',
     beatStart: 8,
     beatEnd: 2,
     onsetMinutes: 25,

@@ -1,5 +1,5 @@
 // The sleep audio engine. Everything is generated live on the phone, never a looped track:
-//   noise bed   - two long noise buffers of different lengths, summed, through a slowly drifting low-pass filter
+//   soundscape  - ocean, rain, stream, wind or plain noise, built from long noise buffers and slow drifts (soundscapes.ts)
 //   carrier     - the beat: binaural (left/right tones a few Hz apart, for headphones) or isochronic (one tone pulsed, for a speaker)
 //   ambient pad - four soft tones whose volumes and tuning drift at unrelated slow rates, so the texture never repeats
 //   wake layer  - brighter tones that ramp in before the wake time, outside the sleep-timer fade
@@ -14,7 +14,8 @@ import {
   type GainNode,
 } from 'react-native-audio-api';
 
-import type { Mix, NoiseColor, Protocol } from './protocols';
+import type { Mix, Protocol } from './protocols';
+import { buildSoundscape, type Soundscape } from './soundscapes';
 
 export type CarrierMode = 'binaural' | 'isochronic';
 
@@ -22,6 +23,7 @@ export type SessionPlan = {
   protocol: Protocol;
   mix: Mix;
   mode: CarrierMode;
+  soundscape: Soundscape;
   sleepMinutes: number | null; // null = all night
   wakeAt: Date | null; // null = no wake ramp
 };
@@ -34,44 +36,6 @@ const SLEEP_FADE = 10 * 60; // the sleep timer fades out over its last 10 minute
 const WAKE_RAMP = 15 * 60; // the wake layer rises over 15 minutes, peaking at the wake time
 
 const level = (v: number) => v * v; // sliders feel even to the ear
-
-function noiseBuffer(ctx: AudioContext, seconds: number, color: NoiseColor) {
-  const rate = ctx.sampleRate;
-  const buf = ctx.createBuffer(2, Math.floor(seconds * rate), rate);
-  for (let ch = 0; ch < 2; ch++) {
-    const data = new Float32Array(buf.length);
-    if (color === 'pink') {
-      // Paul Kellet's pink filter
-      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-      for (let i = 0; i < data.length; i++) {
-        const w = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + w * 0.0555179;
-        b1 = 0.99332 * b1 + w * 0.0750759;
-        b2 = 0.969 * b2 + w * 0.153852;
-        b3 = 0.8665 * b3 + w * 0.3104856;
-        b4 = 0.55 * b4 + w * 0.5329522;
-        b5 = -0.7616 * b5 - w * 0.016898;
-        data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11;
-        b6 = w * 0.115926;
-      }
-    } else {
-      let last = 0;
-      for (let i = 0; i < data.length; i++) {
-        last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02;
-        data[i] = last * 3.5;
-      }
-    }
-    // soften the loop seam
-    const edge = Math.floor(rate * 0.5);
-    for (let i = 0; i < edge; i++) {
-      const g = i / edge;
-      data[i] *= g;
-      data[data.length - 1 - i] *= g;
-    }
-    buf.copyToChannel(data, ch);
-  }
-  return buf;
-}
 
 export class SleepEngine {
   private ctx: AudioContext | null = null;
@@ -108,25 +72,15 @@ export class SleepEngine {
     master.connect(ctx.destination);
     this.master = master;
 
-    // --- noise bed ---
+    // --- soundscape (the "noise" layer): ocean, rain, stream, wind or plain noise ---
     const noise = ctx.createGain();
     noise.gain.value = level(plan.mix.noise) * MAX.noise;
-    const tone = ctx.createBiquadFilter();
-    tone.type = 'lowpass';
-    tone.frequency.value = plan.protocol.noise === 'pink' ? 2400 : 1200;
-    tone.Q.value = 0.3;
-    this.drift(ctx, tone.frequency, 0.011, plan.protocol.noise === 'pink' ? 700 : 350);
-    for (const [secs, gain] of [[29, 0.7], [37, 0.5]] as const) {
-      const src = ctx.createBufferSource();
-      src.buffer = noiseBuffer(ctx, secs, plan.protocol.noise);
-      src.loop = true;
-      const g = ctx.createGain();
-      g.gain.value = gain;
-      src.connect(g);
-      g.connect(tone);
-      src.start(now);
-    }
-    tone.connect(noise);
+    buildSoundscape(plan.soundscape, {
+      ctx,
+      out: noise,
+      start: now,
+      drift: (param, hz, amount, delay) => this.drift(ctx, param, hz, amount, delay),
+    });
     noise.connect(master);
 
     // --- carrier: binaural and isochronic both built; the mode picks which one is audible ---
@@ -224,14 +178,14 @@ export class SleepEngine {
   }
 
   // A slow sine wobble on a parameter: value ± amount at `hz` cycles per second.
-  private drift(ctx: AudioContext, param: AudioParam, hz: number, amount: number) {
+  private drift(ctx: AudioContext, param: AudioParam, hz: number, amount: number, delay = Math.random() * 3) {
     const o = ctx.createOscillator();
     o.frequency.value = hz;
     const g = ctx.createGain();
     g.gain.value = amount;
     o.connect(g);
     g.connect(param);
-    o.start(ctx.currentTime + Math.random() * 3);
+    o.start(ctx.currentTime + delay);
   }
 
   setMix(mix: Mix) {
