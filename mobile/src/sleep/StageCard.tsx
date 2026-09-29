@@ -1,6 +1,6 @@
 // The live sleep-stage card on the session screen: heart rate, tonight's estimated stage, and the night so far.
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { C, F } from '@/theme';
@@ -29,6 +29,12 @@ const STATUS: Record<TrackerView['status'], string> = {
 export function StageCard() {
   const v = useTracker();
   const [device, setDevice] = useState<SavedDevice | null>(null);
+  // re-read the saved device whenever this screen comes back into view (e.g. after picking a watch)
+  useFocusEffect(
+    useCallback(() => {
+      loadDevice().then(setDevice);
+    }, []),
+  );
   useEffect(() => {
     loadDevice().then(setDevice);
   }, [v.status]);
