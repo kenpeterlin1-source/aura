@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { engine, type CarrierMode } from '@/audio/engine';
 import { bandName, beatAt, PROTOCOLS, protocolById, type Mix } from '@/audio/protocols';
 import { SOUNDSCAPES, soundscapeLabel } from '@/audio/soundscapes';
+import { StageCard } from '@/sleep/StageCard';
+import { tracker } from '@/sleep/tracker';
 import { clockLabel, DEFAULTS, loadSettings, nextWake, saveSettings, type Settings } from '@/settings';
 import { C, F } from '@/theme';
 
@@ -70,6 +72,7 @@ export default function Session() {
     setBusy(true);
     try {
       await engine.start(plan(over));
+      if (!tracker.running) tracker.start();
       setStartedAt(new Date());
       setElapsed(0);
       setPlaying(true);
@@ -80,6 +83,7 @@ export default function Session() {
   const stop = async () => {
     setBusy(true);
     await engine.stop();
+    await tracker.stop();
     setPlaying(false);
     setStartedAt(null);
     setBusy(false);
@@ -135,6 +139,8 @@ export default function Session() {
         </Pressable>
         <Text style={st.timer}>{playing ? clock(elapsed) : 'Press play, then put the phone down'}</Text>
       </View>
+
+      <StageCard />
 
       <Section title="Soundscape">
         <View style={st.chips}>

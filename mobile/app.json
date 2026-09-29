@@ -2,7 +2,7 @@
   "expo": {
     "name": "AuraStream",
     "slug": "aurastream",
-    "version": "1.0.0",
+    "version": "0.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aurastream",
@@ -19,7 +19,13 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.peterlin.aurastream"
+      "package": "com.peterlin.aurastream",
+      "blockedPermissions": [
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "output": "single",
@@ -47,7 +53,18 @@
           "disableFFmpeg": true
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": true,
+          "modes": [
+            "central"
+          ],
+          "neverForLocation": true,
+          "bluetoothAlwaysPermission": "AuraStream connects to your watch or heart-rate strap to follow your sleep."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
