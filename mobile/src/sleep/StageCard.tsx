@@ -23,6 +23,7 @@ const STATUS: Record<TrackerView['status'], string> = {
   connecting: 'Connecting…',
   connected: 'Connected',
   lost: 'Signal lost · reconnecting',
+  'no-hr': 'Connected, but it isn’t sharing heart rate. Turn on Heart rate broadcast.',
 };
 
 export function StageCard() {

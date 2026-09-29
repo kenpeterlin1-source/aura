@@ -7,7 +7,7 @@ import { Platform } from 'react-native';
 import { SleepEstimator, type Epoch } from './estimator';
 import { HeartRateLink } from './heartRate';
 
-export type TrackerStatus = 'off' | 'connecting' | 'connected' | 'lost' | 'no-device';
+export type TrackerStatus = 'off' | 'connecting' | 'connected' | 'lost' | 'no-device' | 'no-hr';
 
 export type TrackerView = {
   status: TrackerStatus;

@@ -14,6 +14,7 @@ export default function HeartSetup() {
   const [found, setFound] = useState<FoundDevice[]>([]);
   const [scanning, setScanning] = useState(false);
   const [note, setNote] = useState('');
+  const [searched, setSearched] = useState(false);
 
   useEffect(() => {
     loadDevice().then(setCurrent);
@@ -34,6 +35,7 @@ export default function HeartSetup() {
       setNote(e instanceof Error ? e.message : 'Scan failed. Check that Bluetooth is on.');
     }
     setScanning(false);
+    setSearched(true);
   };
 
   const pick = (d: FoundDevice) => {
@@ -97,8 +99,8 @@ export default function HeartSetup() {
           <Text style={st.link}>Use</Text>
         </Pressable>
       ))}
-      {!scanning && found.length === 0 && bluetoothAvailable && (
-        <Text style={st.muted}>Nothing found yet. Make sure Heart rate broadcast is on and the watch is close to the phone.</Text>
+      {!scanning && searched && found.length === 0 && bluetoothAvailable && (
+        <Text style={st.muted}>Nothing found. Make sure Heart rate broadcast is on (on some watches you start it from its own screen) and the watch is on your wrist, close to the phone.</Text>
       )}
     </ScrollView>
   );

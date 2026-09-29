@@ -71,14 +71,29 @@ export async function askPermissions() {
   return wanted.every((p) => result[p] === PermissionsAndroid.RESULTS.GRANTED);
 }
 
-// Looks for heart-rate devices for `seconds`, calling onFound for each new one.
-export async function scan(onFound: (d: FoundDevice) => void, seconds = 12) {
+const LIKELY = /amazfit|t-rex|trex|zepp|polar|garmin|wahoo|coros|suunto|whoop|heart|\bhr\b|hrm|band|watch/i;
+
+// Looks for heart-rate devices for `seconds`, calling onFound for each new one:
+// 1. watches already connected to the phone that offer heart rate (Amazfit shares it over the Zepp connection),
+// 2. anything advertising the heart-rate service, 3. named devices that look like watches or straps (checked on connect).
+export async function scan(onFound: (d: FoundDevice) => void, seconds = 15) {
   const m = ble();
   const seen = new Set<string>();
-  await m.startDeviceScan([HR_SERVICE], null, (error, d) => {
-    if (error || !d || seen.has(d.id)) return;
-    seen.add(d.id);
-    onFound({ id: d.id, name: d.name ?? d.localName ?? 'Heart-rate device', rssi: d.rssi ?? null });
+  const add = (id: string, name: string | null, rssi: number | null, note: string) => {
+    if (seen.has(id)) return;
+    seen.add(id);
+    onFound({ id, name: `${name ?? 'Heart-rate device'}${note}`, rssi });
+  };
+  try {
+    for (const d of await m.connectedDevices([HR_SERVICE])) add(d.id, d.name ?? d.localName, null, ' · connected');
+  } catch {}
+  const { ScanMode } = require('react-native-ble-plx') as typeof import('react-native-ble-plx'); // eslint-disable-line @typescript-eslint/no-require-imports
+  await m.startDeviceScan(null, { scanMode: ScanMode.LowLatency, allowDuplicates: false }, (error, d) => {
+    if (error || !d) return;
+    const name = d.name ?? d.localName ?? null;
+    const hr = (d.serviceUUIDs ?? []).some((u) => u.toLowerCase() === HR_SERVICE || u.toLowerCase().startsWith('0000180d'));
+    if (hr) add(d.id, name, d.rssi ?? null, '');
+    else if (name && LIKELY.test(name)) add(d.id, name, d.rssi ?? null, ' · check');
   });
   await new Promise((r) => setTimeout(r, seconds * 1000));
   await m.stopDeviceScan();
@@ -97,7 +112,7 @@ export class HeartRateLink {
   constructor(
     private readonly deviceId: string,
     private readonly onReading: (r: HrReading) => void,
-    private readonly onStatus: (s: 'connecting' | 'connected' | 'lost') => void,
+    private readonly onStatus: (s: 'connecting' | 'connected' | 'lost' | 'no-hr') => void,
   ) {}
 
   async start() {
@@ -112,6 +127,13 @@ export class HeartRateLink {
       const m = ble();
       const d = await m.connectToDevice(this.deviceId, { autoConnect: false, timeout: 15000 });
       await d.discoverAllServicesAndCharacteristics();
+      const services = (await d.services()).map((x) => x.uuid.toLowerCase());
+      if (!services.includes(HR_SERVICE)) {
+        this.onStatus('no-hr');
+        await d.cancelConnection().catch(() => {});
+        this.stopped = true;
+        return;
+      }
       this.device = d;
       this.subs.push(
         d.monitorCharacteristicForService(HR_SERVICE, HR_MEASUREMENT, (error, c) => {
