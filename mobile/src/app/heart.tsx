@@ -57,7 +57,7 @@ export default function HeartSetup() {
 
       <View style={st.steps}>
         <Text style={st.label}>Amazfit (T-Rex 3 and other Zepp OS watches)</Text>
-        <Text style={st.body}>1. On the watch, turn on Heart Rate Push (in the heart-rate or workout settings).</Text>
+        <Text style={st.body}>1. Turn on Heart rate broadcast (called Heart Rate Push on some models). It doesn’t need a workout running on the T-Rex 3 if it stays on at the watch face.</Text>
         <Text style={st.body}>2. Keep the watch near the phone, then tap Find devices below.</Text>
         <Text style={st.muted}>Leaving it on all night uses more watch battery. Try one night and check how much.</Text>
       </View>
@@ -98,7 +98,7 @@ export default function HeartSetup() {
         </Pressable>
       ))}
       {!scanning && found.length === 0 && bluetoothAvailable && (
-        <Text style={st.muted}>Nothing found yet. Make sure Heart Rate Push is on and the watch screen shows it’s broadcasting.</Text>
+        <Text style={st.muted}>Nothing found yet. Make sure Heart rate broadcast is on and the watch is close to the phone.</Text>
       )}
     </ScrollView>
   );
