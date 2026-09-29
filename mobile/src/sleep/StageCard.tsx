@@ -47,6 +47,7 @@ export function StageCard() {
         <View style={st.bpmBox}>
           <Text style={st.bpm}>{v.bpm ?? '—'}</Text>
           <Text style={st.muted}>bpm</Text>
+          <Text style={st.muted}>{e?.rmssd != null ? `HRV ${Math.round(e.rmssd)} ms` : 'HRV —'}</Text>
         </View>
       </View>
 
@@ -56,6 +57,9 @@ export function StageCard() {
         </View>
       )}
       {e && !e.confident && <Text style={st.muted}>Learning tonight’s baseline (first 15 minutes).</Text>}
+      {v.status === 'connected' && e && e.rmssd == null && (
+        <Text style={st.muted}>HRV shows here if your watch sends beat-to-beat timing; many broadcast heart rate only.</Text>
+      )}
 
       {v.epochs.length > 1 && <Hypnogram epochs={v.epochs} />}
 
