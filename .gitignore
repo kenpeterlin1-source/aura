@@ -1,1 +1,4 @@
 builds/
+watch-tools/node_modules/
+watch/node_modules/
+watch/dist/
