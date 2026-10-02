@@ -1,0 +1,30 @@
+diff --git a/node_modules/react-native-audio-api/android/src/main/cpp/audioapi/android/core/AudioPlayer.cpp b/node_modules/react-native-audio-api/android/src/main/cpp/audioapi/android/core/AudioPlayer.cpp
+index 76c51aa..0e3008f 100644
+--- a/node_modules/react-native-audio-api/android/src/main/cpp/audioapi/android/core/AudioPlayer.cpp
++++ b/node_modules/react-native-audio-api/android/src/main/cpp/audioapi/android/core/AudioPlayer.cpp
+@@ -31,10 +31,13 @@ AudioPlayer::AudioPlayer(
+ bool AudioPlayer::openAudioStream() {
+   AudioStreamBuilder builder;
+ 
+-  builder.setSharingMode(SharingMode::Exclusive)
++  // AuraStream patch: long, steady playback (sleep audio) - shared mode, normal performance mode and a large
++  // buffer instead of exclusive low-latency, which glitched (crackled) on any small scheduling hiccup.
++  builder.setSharingMode(SharingMode::Shared)
+       ->setFormat(AudioFormat::Float)
+       ->setFormatConversionAllowed(true)
+-      ->setPerformanceMode(PerformanceMode::LowLatency)
++      ->setPerformanceMode(PerformanceMode::None)
++      ->setBufferCapacityInFrames(static_cast<int>(sampleRate_))
+       ->setChannelCount(channelCount_)
+       ->setSampleRateConversionQuality(SampleRateConversionQuality::Medium)
+       ->setFramesPerDataCallback(RENDER_QUANTUM_SIZE)
+@@ -49,6 +52,9 @@ bool AudioPlayer::openAudioStream() {
+     return false;
+   }
+ 
++  // use the whole buffer (about half a second to a second of audio ready ahead of time)
++  mStream_->setBufferSizeInFrames(mStream_->getBufferCapacityInFrames());
++
+   buffer_ = std::make_shared<DSPAudioBuffer>(RENDER_QUANTUM_SIZE, channelCount_, sampleRate_);
+   isInitialized_.store(true, std::memory_order_release);
+   return true;
