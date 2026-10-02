@@ -27,9 +27,9 @@ export const PROTOCOLS: Protocol[] = [
     beatStart: 8,
     beatEnd: 2,
     onsetMinutes: 25,
-    carrierHz: 150,
+    carrierHz: 200,
     noise: 'brown',
-    ambientRoot: 98,
+    ambientRoot: 131,
     mix: { carrier: 0.7, noise: 0.7, ambient: 0.35 },
   },
   {
@@ -41,7 +41,7 @@ export const PROTOCOLS: Protocol[] = [
     onsetMinutes: 30,
     carrierHz: 200,
     noise: 'pink',
-    ambientRoot: 123.5,
+    ambientRoot: 165,
     mix: { carrier: 0.75, noise: 0.5, ambient: 0.5 },
   },
   {
@@ -51,9 +51,9 @@ export const PROTOCOLS: Protocol[] = [
     beatStart: 7,
     beatEnd: 2,
     onsetMinutes: 30,
-    carrierHz: 170,
+    carrierHz: 210,
     noise: 'brown',
-    ambientRoot: 104,
+    ambientRoot: 139,
     mix: { carrier: 0.6, noise: 0.65, ambient: 0.55 },
   },
   {
@@ -65,7 +65,7 @@ export const PROTOCOLS: Protocol[] = [
     onsetMinutes: 20,
     carrierHz: 180,
     noise: 'pink',
-    ambientRoot: 110,
+    ambientRoot: 147,
     mix: { carrier: 0.85, noise: 0.6, ambient: 0.4 },
   },
 ];

@@ -29,7 +29,7 @@ export type SessionPlan = {
 };
 
 // Loudest each layer gets at 100% on its slider.
-const MAX = { carrier: 0.12, noise: 0.55, ambient: 0.22 };
+const MAX = { carrier: 0.08, noise: 0.55, ambient: 0.22 };
 const FADE_IN = 4; // seconds - short, so the volume you hear right away is the volume you get
 const OUTPUT = 2.2; // overall level at full fade-in; the phone's volume buttons do the rest
 const SLEEP_FADE = 10 * 60; // the sleep timer fades out over its last 10 minutes
@@ -96,7 +96,13 @@ export class SleepEngine {
     }
     limiter.curve = curve;
     limiter.connect(ctx.destination);
-    master.connect(limiter);
+    // phone speakers can't reproduce deep bass and rattle (crackle) when pushed with it; cut below ~90 Hz
+    const bassCut = ctx.createBiquadFilter();
+    bassCut.type = 'highpass';
+    bassCut.frequency.value = 90;
+    bassCut.Q.value = 0.7;
+    bassCut.connect(limiter);
+    master.connect(bassCut);
     this.master = master;
 
     // --- soundscape (the "noise" layer): ocean, rain, stream, wind or plain noise ---
@@ -179,7 +185,7 @@ export class SleepEngine {
     // --- wake layer: its own path to the speakers, so the sleep timer can't silence it ---
     const wake = ctx.createGain();
     wake.gain.value = 0;
-    wake.connect(limiter);
+    wake.connect(bassCut);
     if (plan.wakeAt) {
       const at = now + Math.max(0, (plan.wakeAt.getTime() - Date.now()) / 1000);
       wake.gain.setValueAtTime(0, Math.max(now, at - WAKE_RAMP));
