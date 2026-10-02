@@ -79,19 +79,26 @@ function drops(data: Float32Array, rate: number) {
   }
 }
 
-// Running water: pink noise whose loudness wobbles quickly and unevenly (baked in, so the phone does no work for it).
-function babble(data: Float32Array, rate: number) {
-  fill(data, 'pink');
+// Running water: white + pink noise whose loudness flutters fast and unevenly (a smoothed random envelope around
+// 15-40 changes a second), the "shhh" of water over stones. Baked in, so the phone does no work for it.
+function whitewater(data: Float32Array, rate: number) {
+  const pink = new Float32Array(data.length);
+  fill(pink, 'pink');
+  let env = 0.7;
+  let target = 0.7;
+  let slow = 0;
   for (let i = 0; i < data.length; i++) {
-    const t = i / rate;
-    const w = 0.75 + 0.12 * Math.sin(2 * Math.PI * 0.71 * t) + 0.08 * Math.sin(2 * Math.PI * 1.37 * t + 1) + 0.06 * Math.sin(2 * Math.PI * 0.53 * t + 2);
-    data[i] *= w;
+    if (i % Math.floor(rate / 30) === 0) target = 0.45 + Math.random() * 0.55; // new flutter level ~30x a second
+    env += (target - env) * (40 / rate); // smooth it so it flutters instead of clicking
+    slow += ((Math.random() * 2 - 1) * 0.02 - slow) * (0.5 / rate); // very slow surge
+    const w = (Math.random() * 2 - 1) * 0.22;
+    data[i] = (w * 0.6 + pink[i] * 0.9) * env * (1 + slow * 8);
   }
 }
 
 // Brook bubbles: tiny rising blips, dense and uneven.
 function bubbles(data: Float32Array, rate: number) {
-  const perSecond = 22;
+  const perSecond = 6;
   const count = Math.floor((data.length / rate) * perSecond);
   for (let n = 0; n < count; n++) {
     const at = Math.floor(Math.random() * data.length);
@@ -197,25 +204,22 @@ export function buildSoundscape(kind: Soundscape, b: Build) {
   }
 
   if (kind === 'stream') {
-    // Running water: a mid-band rush whose centre wanders quickly, plus bubbling.
+    // Running water: a bright, fluttering rush (most of the sound), a soft low rumble, and only occasional bubbles.
     const rush = ctx.createBiquadFilter();
     rush.type = 'bandpass';
-    rush.frequency.value = 1100;
-    rush.Q.value = 0.9;
-    const flow = ctx.createGain();
-    flow.gain.value = 0.8;
-    loop(b, 29, babble, 1, rush);
-    drift(rush.frequency, 0.19, 300);
-    drift(rush.frequency, 0.07, 180);
-    rush.connect(flow);
-    flow.connect(out);
+    rush.frequency.value = 2200;
+    rush.Q.value = 0.45;
+    loop(b, 29, whitewater, 1.2, rush);
+    loop(b, 37, whitewater, 0.8, rush);
+    drift(rush.frequency, 0.05, 500);
+    drift(rush.frequency, 0.013, 300);
+    rush.connect(out);
     const low = ctx.createBiquadFilter();
     low.type = 'lowpass';
-    low.frequency.value = 400;
-    loop(b, 37, noise('brown'), 0.45, low);
+    low.frequency.value = 500;
+    loop(b, 41, noise('brown'), 0.35, low);
     low.connect(out);
-    loop(b, 17, bubbles, 0.9, out);
-    loop(b, 23, bubbles, 0.7, out);
+    loop(b, 23, bubbles, 0.25, out);
     return;
   }
 
