@@ -30,7 +30,7 @@ export type SessionPlan = {
 
 // Loudest each layer gets at 100% on its slider.
 const MAX = { carrier: 0.12, noise: 0.55, ambient: 0.22 };
-const FADE_IN = 45; // seconds
+const FADE_IN = 4; // seconds - short, so the volume you hear right away is the volume you get
 const OUTPUT = 2.2; // overall level at full fade-in; the phone's volume buttons do the rest
 const SLEEP_FADE = 10 * 60; // the sleep timer fades out over its last 10 minutes
 const WAKE_RAMP = 15 * 60; // the wake layer rises over 15 minutes, peaking at the wake time
@@ -87,7 +87,16 @@ export class SleepEngine {
       master.gain.setValueAtTime(OUTPUT, Math.max(now + FADE_IN, end - SLEEP_FADE));
       master.gain.linearRampToValueAtTime(0, end);
     }
-    master.connect(ctx.destination);
+    // soft limiter: loud moments are rounded off instead of clipping (clipping sounds like crackle)
+    const limiter = ctx.createWaveShaper();
+    const curve = new Float32Array(2049);
+    for (let i = 0; i < curve.length; i++) {
+      const x = (i / (curve.length - 1)) * 2 - 1;
+      curve[i] = Math.tanh(1.5 * x) / Math.tanh(1.5);
+    }
+    limiter.curve = curve;
+    limiter.connect(ctx.destination);
+    master.connect(limiter);
     this.master = master;
 
     // --- soundscape (the "noise" layer): ocean, rain, stream, wind or plain noise ---
@@ -170,7 +179,7 @@ export class SleepEngine {
     // --- wake layer: its own path to the speakers, so the sleep timer can't silence it ---
     const wake = ctx.createGain();
     wake.gain.value = 0;
-    wake.connect(ctx.destination);
+    wake.connect(limiter);
     if (plan.wakeAt) {
       const at = now + Math.max(0, (plan.wakeAt.getTime() - Date.now()) / 1000);
       wake.gain.setValueAtTime(0, Math.max(now, at - WAKE_RAMP));
@@ -188,6 +197,11 @@ export class SleepEngine {
     }
     this.wake = wake;
     this.layers = { carrier, noise, ambient, binaural, iso };
+
+    // how long the drifts need to run: to the end of the sleep timer, or past the wake time, at most 14 hours
+    const untilWake = plan.wakeAt ? (plan.wakeAt.getTime() - Date.now()) / 1000 + 30 * 60 : 12 * 3600;
+    const length = plan.sleepMinutes ? plan.sleepMinutes * 60 + 60 : untilWake;
+    this.applyDrifts(now + 0.05, Math.min(14 * 3600, Math.max(600, length)));
 
     this.startedAtWall = new Date();
     this.current = plan;
@@ -210,15 +224,31 @@ export class SleepEngine {
     }
   }
 
-  // A slow sine wobble on a parameter: value ± amount at `hz` cycles per second.
-  private drift(ctx: AudioContext, param: AudioParam, hz: number, amount: number, delay = Math.random() * 3) {
-    const o = ctx.createOscillator();
-    o.frequency.value = hz;
-    const g = ctx.createGain();
-    g.gain.value = amount;
-    o.connect(g);
-    g.connect(param);
-    o.start(ctx.currentTime + delay);
+  // Slow wobbles on parameters (filter sweeps, swells, detune). They used to be live oscillators wired into the parameters,
+  // which made the phone recompute filters for every sample and caused crackling. Now they're collected here and turned
+  // into one precomputed automation curve per parameter (applyDrifts), which costs almost nothing while playing.
+  private drifts = new Map<AudioParam, { base: number; parts: { hz: number; amount: number; phase: number }[] }>();
+
+  // value ± amount at `hz` cycles per second (capped at 0.2 Hz; anything faster is baked into the sound buffers instead)
+  private drift(_ctx: AudioContext, param: AudioParam, hz: number, amount: number, delay = Math.random() * 3) {
+    const entry = this.drifts.get(param) ?? { base: param.value, parts: [] };
+    entry.parts.push({ hz: Math.min(hz, 0.2), amount, phase: -2 * Math.PI * Math.min(hz, 0.2) * delay });
+    this.drifts.set(param, entry);
+  }
+
+  private applyDrifts(start: number, seconds: number) {
+    const step = 1; // one point per second; the curve is interpolated in between
+    const n = Math.ceil(seconds / step) + 1;
+    for (const [param, { base, parts }] of this.drifts) {
+      const values = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let v = base;
+        for (const p of parts) v += p.amount * Math.sin(2 * Math.PI * p.hz * i * step + p.phase);
+        values[i] = v;
+      }
+      param.setValueCurveAtTime(values, start, (n - 1) * step);
+    }
+    this.drifts.clear();
   }
 
   setMix(mix: Mix) {

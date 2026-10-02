@@ -79,6 +79,16 @@ function drops(data: Float32Array, rate: number) {
   }
 }
 
+// Running water: pink noise whose loudness wobbles quickly and unevenly (baked in, so the phone does no work for it).
+function babble(data: Float32Array, rate: number) {
+  fill(data, 'pink');
+  for (let i = 0; i < data.length; i++) {
+    const t = i / rate;
+    const w = 0.75 + 0.12 * Math.sin(2 * Math.PI * 0.71 * t) + 0.08 * Math.sin(2 * Math.PI * 1.37 * t + 1) + 0.06 * Math.sin(2 * Math.PI * 0.53 * t + 2);
+    data[i] *= w;
+  }
+}
+
 // Brook bubbles: tiny rising blips, dense and uneven.
 function bubbles(data: Float32Array, rate: number) {
   const perSecond = 22;
@@ -194,11 +204,9 @@ export function buildSoundscape(kind: Soundscape, b: Build) {
     rush.Q.value = 0.9;
     const flow = ctx.createGain();
     flow.gain.value = 0.8;
-    loop(b, 29, noise('pink'), 1, rush);
-    drift(rush.frequency, 0.71, 260);
-    drift(rush.frequency, 1.37, 180);
+    loop(b, 29, babble, 1, rush);
     drift(rush.frequency, 0.19, 300);
-    drift(flow.gain, 0.53, 0.12);
+    drift(rush.frequency, 0.07, 180);
     rush.connect(flow);
     flow.connect(out);
     const low = ctx.createBiquadFilter();
