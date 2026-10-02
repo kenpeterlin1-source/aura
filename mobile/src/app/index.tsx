@@ -1,5 +1,6 @@
 // The sleep session screen: pick a protocol, set the mix, timer and wake time, press play and put the phone down.
 import Slider from '@react-native-community/slider';
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -158,6 +159,11 @@ export default function Session() {
         <Text style={st.timer}>{playing ? clock(elapsed) : 'Press play, then put the phone down'}</Text>
       </View>
 
+      <Pressable onPress={() => router.push('/morning')} style={st.morning} accessibilityRole="button">
+        <Text style={st.morningText}>Last night&apos;s sleep</Text>
+        <Text style={st.morningText}>›</Text>
+      </Pressable>
+
       <StageCard />
 
       <Section title="Soundscape">
@@ -311,5 +317,7 @@ const st = StyleSheet.create({
   wakeTime: { fontFamily: F.serif, fontSize: 28, color: C.text1, minWidth: 110, textAlign: 'center', fontVariant: ['tabular-nums'] },
   schedRow: { flexDirection: 'row', gap: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
   schedTime: { fontFamily: F.sansMedium, fontSize: 13.5, color: C.amberDeep, width: 128, fontVariant: ['tabular-nums'] },
+  morning: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 18, borderRadius: 14, backgroundColor: C.card, borderWidth: 1, borderColor: C.border },
+  morningText: { fontFamily: F.sansMedium, fontSize: 16, color: C.amber },
   footnote: { fontFamily: F.sans, fontSize: 12.5, color: C.text3, lineHeight: 18 },
 });

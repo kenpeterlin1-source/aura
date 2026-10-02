@@ -14,6 +14,7 @@ import {
   type GainNode,
 } from 'react-native-audio-api';
 
+import { logEnd, logStart } from '../sessionLog';
 import type { Mix, Protocol } from './protocols';
 import { buildSoundscape, type Soundscape } from './soundscapes';
 
@@ -228,6 +229,7 @@ export class SleepEngine {
     this.startedAtWall = new Date();
     this.current = plan;
     this.emit();
+    logStart({ start: this.startedAtWall.toISOString(), protocol: p.name, soundscape: plan.soundscape, mode: plan.mode });
 
     if (Platform.OS !== 'web') {
       // shows the "now playing" notification, which keeps Android playing with the screen off; its Stop/Pause end the session
@@ -308,6 +310,7 @@ export class SleepEngine {
     this.startedAtWall = null;
     this.current = null;
     this.emit();
+    logEnd();
     await new Promise((r) => setTimeout(r, fadeSeconds * 1000 + 100));
     await ctx.close().catch(() => {});
     if (Platform.OS !== 'web') await PlaybackNotificationManager.hide().catch(() => {});

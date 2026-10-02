@@ -2,7 +2,7 @@
   "expo": {
     "name": "AuraStream",
     "slug": "aurastream",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aurastream",
@@ -26,7 +26,14 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
       ],
-      "versionCode": 2
+      "versionCode": 2,
+      "permissions": [
+        "android.permission.health.READ_SLEEP",
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_HEART_RATE_VARIABILITY",
+        "android.permission.health.READ_OXYGEN_SATURATION",
+        "android.permission.health.READ_RESPIRATORY_RATE"
+      ]
     },
     "web": {
       "output": "single",
@@ -64,6 +71,17 @@
           ],
           "neverForLocation": true,
           "bluetoothAlwaysPermission": "AuraStream connects to your watch or heart-rate strap to follow your sleep."
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
         }
       ]
     ],
