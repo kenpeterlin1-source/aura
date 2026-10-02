@@ -7,6 +7,7 @@ export type HcStage = 'awake' | 'light' | 'deep' | 'rem' | 'asleep' | 'out' | 'u
 export type NightReport = {
   start: Date;
   end: Date;
+  stale: boolean; // ended more than 20 h ago, so not last night
   source: string; // app that wrote the sleep session, e.g. com.huami.watch.hmwatchmanager (Zepp)
   stages: { start: Date; end: Date; stage: HcStage }[];
   minutes: Record<HcStage, number>;
@@ -77,9 +78,9 @@ async function readAll<T>(recordType: string, startTime: Date, endTime: Date): P
 type SleepRec = { startTime: string; endTime: string; stages?: { startTime: string; endTime: string; stage: number }[]; metadata?: { dataOrigin?: string } };
 type HrRec = { samples: { time: string; beatsPerMinute: number }[] };
 
-// The most recent sleep session that ended in the last 20 hours, with everything measured during it.
+// The most recent sleep session in the last 7 days (usually last night), with everything measured during it.
 export async function lastNight(now = new Date()): Promise<NightReport | null> {
-  const from = new Date(now.getTime() - 20 * 3600e3);
+  const from = new Date(now.getTime() - 7 * 86400e3);
   const sessions = await readAll<SleepRec>('SleepSession', from, now);
   if (!sessions.length) return null;
   const s = sessions.sort((a, b) => +new Date(b.endTime) - +new Date(a.endTime))[0];
@@ -108,6 +109,7 @@ export async function lastNight(now = new Date()): Promise<NightReport | null> {
   return {
     start,
     end,
+    stale: +now - +end > 20 * 3600e3,
     source: s.metadata?.dataOrigin ?? '',
     stages,
     minutes,

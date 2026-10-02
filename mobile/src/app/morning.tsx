@@ -73,7 +73,7 @@ export default function Morning() {
       {hc === 'ready' && night === 'loading' && <ActivityIndicator color={C.amber} />}
       {hc === 'ready' && night === null && (
         <View style={st.card}>
-          <Text style={st.body}>No sleep found in the last 20 hours.</Text>
+          <Text style={st.body}>No sleep found in Health Connect for the last 7 days.</Text>
           <Text style={st.muted}>Open Zepp so it syncs last night, then come back. {error}</Text>
           <Pressable onPress={load} style={st.button} accessibilityRole="button">
             <Text style={st.buttonText}>Check again</Text>
@@ -101,7 +101,11 @@ function Report({ night, played }: { night: NightReport; played: PlayedSession[]
   return (
     <>
       <View style={st.card}>
-        <Text style={st.label}>{zepp ? 'From Zepp' : night.source ? `From ${night.source}` : 'From Health Connect'}</Text>
+        <Text style={st.label}>
+          {zepp ? 'From Zepp' : night.source ? `From ${night.source}` : 'From Health Connect'} ·{' '}
+          {night.end.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+          {night.stale ? ' (not last night: Zepp may not have synced yet)' : ''}
+        </Text>
         <Text style={st.big}>{hm(night.asleepMinutes)}</Text>
         <Text style={st.muted}>
           asleep · {time(night.start)} – {time(night.end)}
