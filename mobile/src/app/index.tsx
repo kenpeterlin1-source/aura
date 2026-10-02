@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { engine, type CarrierMode } from '@/audio/engine';
+import { engine, resolveMode, type CarrierMode, type ModeChoice } from '@/audio/engine';
 import { bandName, beatAt, PROTOCOLS, protocolById, type Mix } from '@/audio/protocols';
 import { SOUNDSCAPES, soundscapeLabel } from '@/audio/soundscapes';
 import { StageCard } from '@/sleep/StageCard';
@@ -30,6 +30,8 @@ export default function Session() {
   // start from the engine's state: after the screen is closed and reopened, a session may still be playing
   const [playing, setPlaying] = useState(engine.playing);
   const [busy, setBusy] = useState(false);
+  // what the sound is actually using right now (Auto resolves to one of these)
+  const [activeMode, setActiveMode] = useState<CarrierMode | null>(engine.current?.mode ?? null);
   const [elapsed, setElapsed] = useState(0);
   const [startedAt, setStartedAt] = useState<Date | null>(engine.startedAtWall);
   const loaded = useRef(false);
@@ -67,13 +69,15 @@ export default function Session() {
   const from = startedAt ?? new Date();
   const wakeAt = s.wakeEnabled ? nextWake(s.wakeMinutes, from) : null;
 
-  const plan = (over: Partial<Settings> = {}) => {
+  const plan = async (over: Partial<Settings> = {}) => {
     const n = { ...s, ...over };
     const p = protocolById(n.protocolId);
+    const mode = await resolveMode(n.mode);
+    setActiveMode(mode);
     return {
       protocol: p,
       mix: n.mix ?? p.mix,
-      mode: n.mode,
+      mode,
       soundscape: n.soundscape ?? p.noise,
       sleepMinutes: n.sleepMinutes,
       wakeAt: n.wakeEnabled ? nextWake(n.wakeMinutes) : null,
@@ -83,7 +87,7 @@ export default function Session() {
   const start = async (over: Partial<Settings> = {}) => {
     setBusy(true);
     try {
-      await engine.start(plan(over));
+      await engine.start(await plan(over));
       if (!tracker.running) tracker.start();
       setStartedAt(new Date());
       setElapsed(0);
@@ -111,8 +115,10 @@ export default function Session() {
     setS((cur) => ({ ...cur, mix: next }));
     engine.setMix(next);
   };
-  const setMode = (mode: CarrierMode) => {
-    setS((cur) => ({ ...cur, mode }));
+  const setMode = async (choice: ModeChoice) => {
+    setS((cur) => ({ ...cur, mode: choice }));
+    const mode = await resolveMode(choice);
+    setActiveMode(mode);
     engine.setMode(mode);
   };
 
@@ -164,10 +170,18 @@ export default function Session() {
 
       <Section title="Sound">
         <View style={st.segment}>
-          {(['binaural', 'isochronic'] as CarrierMode[]).map((m) => (
+          {(['auto', 'binaural', 'isochronic'] as ModeChoice[]).map((m) => (
             <Pressable key={m} onPress={() => setMode(m)} style={[st.segBtn, s.mode === m && st.segOn]}>
-              <Text style={[st.segText, s.mode === m && { color: C.amber }]}>{m === 'binaural' ? 'Headphones' : 'Speaker'}</Text>
-              <Text style={st.segSub}>{m === 'binaural' ? 'binaural beat' : 'pulsed tone'}</Text>
+              <Text style={[st.segText, s.mode === m && { color: C.amber }]}>{m === 'auto' ? 'Auto' : m === 'binaural' ? 'Headphones' : 'Speaker'}</Text>
+              <Text style={st.segSub}>
+                {m === 'auto'
+                  ? activeMode
+                    ? `now: ${activeMode === 'binaural' ? 'headphones' : 'speaker'}`
+                    : 'detects headphones'
+                  : m === 'binaural'
+                    ? 'binaural beat'
+                    : 'pulsed tone'}
+              </Text>
             </Pressable>
           ))}
         </View>

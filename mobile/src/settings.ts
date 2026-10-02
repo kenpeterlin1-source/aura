@@ -1,17 +1,17 @@
 // What the player remembers between nights, saved on the device.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type { CarrierMode } from './audio/engine';
+import type { ModeChoice } from './audio/engine';
 import type { Mix } from './audio/protocols';
 import type { Soundscape } from './audio/soundscapes';
 
-const KEY = 'aurastream.settings.v2';
-const OLD_KEY = 'aurastream.settings.v1'; // v1 saved Menopause as everyone's default; v2 starts on Deep Sleep
+const KEY = 'aurastream.settings.v3';
+const OLD_KEY = 'aurastream.settings.v2'; // v3 starts on automatic headphones/speaker detection
 
 export type Settings = {
   protocolId: string;
   mix: Mix | null; // null = the protocol's own starting mix
-  mode: CarrierMode;
+  mode: ModeChoice; // 'auto' = headphones -> binaural, speaker -> pulsed
   soundscape: Soundscape | null; // null = the protocol's own (pink or brown noise)
   sleepMinutes: number | null; // null = all night
   wakeEnabled: boolean;
@@ -21,7 +21,7 @@ export type Settings = {
 export const DEFAULTS: Settings = {
   protocolId: 'deep-sleep',
   mix: null,
-  mode: 'binaural',
+  mode: 'auto',
   soundscape: null,
   sleepMinutes: null,
   wakeEnabled: true,
@@ -34,8 +34,8 @@ export async function loadSettings(): Promise<Settings> {
     if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
     const old = await AsyncStorage.getItem(OLD_KEY);
     if (old) {
-      // keep everything from v1 except the protocol, which starts on the new default
-      const { protocolId: _drop, mix: _mix, ...rest } = JSON.parse(old);
+      // keep everything from v2 except the sound mode, which starts on automatic
+      const { mode: _mode, ...rest } = JSON.parse(old);
       return { ...DEFAULTS, ...rest };
     }
     return DEFAULTS;

@@ -18,6 +18,22 @@ import type { Mix, Protocol } from './protocols';
 import { buildSoundscape, type Soundscape } from './soundscapes';
 
 export type CarrierMode = 'binaural' | 'isochronic';
+export type ModeChoice = CarrierMode | 'auto';
+
+const HEADPHONES = /headset|headphone|a2dp|ble|hearing|usb/i;
+
+// 'auto' picks binaural when headphones (wired or Bluetooth) are connected, otherwise the pulsed tone for the speaker:
+// binaural beats only work with one tone per ear, and through a single speaker they become loud swells.
+export async function resolveMode(choice: ModeChoice): Promise<CarrierMode> {
+  if (choice !== 'auto') return choice;
+  if (Platform.OS === 'web') return 'isochronic';
+  try {
+    const { availableOutputs } = await AudioManager.getDevicesInfo();
+    return availableOutputs.some((d) => HEADPHONES.test(d.category) || HEADPHONES.test(d.name)) ? 'binaural' : 'isochronic';
+  } catch {
+    return 'isochronic';
+  }
+}
 
 export type SessionPlan = {
   protocol: Protocol;

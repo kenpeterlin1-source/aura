@@ -43,23 +43,23 @@ function fill(data: Float32Array, color: Color) {
   }
 }
 
-// Soften the loop seam so a repeating buffer never clicks.
-function softEdges(data: Float32Array, rate: number) {
-  const edge = Math.floor(rate * 0.5);
-  for (let i = 0; i < edge; i++) {
-    const g = i / edge;
-    data[i] *= g;
-    data[data.length - 1 - i] *= g;
-  }
-}
+// A seamless loop: make the sound a second longer than needed, then blend that extra second into the start with an
+// equal-power crossfade. The loop point is then continuous, with no click and no dip in volume.
+const SEAM = 1; // seconds
 
 function buffer(ctx: AudioContext, seconds: number, make: (data: Float32Array, rate: number) => void) {
   const rate = ctx.sampleRate;
-  const buf = ctx.createBuffer(2, Math.floor(seconds * rate), rate);
+  const length = Math.floor(seconds * rate);
+  const seam = Math.floor(SEAM * rate);
+  const buf = ctx.createBuffer(2, length, rate);
   for (let ch = 0; ch < 2; ch++) {
-    const data = new Float32Array(buf.length);
-    make(data, rate);
-    softEdges(data, rate);
+    const raw = new Float32Array(length + seam);
+    make(raw, rate);
+    const data = raw.slice(0, length);
+    for (let i = 0; i < seam; i++) {
+      const t = i / seam;
+      data[i] = raw[i] * Math.sin((t * Math.PI) / 2) + raw[length + i] * Math.cos((t * Math.PI) / 2);
+    }
     buf.copyToChannel(data, ch);
   }
   return buf;
